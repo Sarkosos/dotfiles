@@ -1,0 +1,162 @@
+-- Autocmds are automatically loaded on the VeryLazy event
+-- Default autocmds that are always set: https://github.com/LazyVim/LazyVim/blob/main/lua/lazyvim/config/autocmds.lua
+--
+-- Add any additional autocmds here
+-- with `vim.api.nvim_create_autocmd`
+--
+-- Or remove existing autocmds by their group name (which is prefixed with `lazyvim_` for the defaults)
+-- e.g. vim.api.nvim_del_augroup_by_name("lazyvim_wrap_spell")
+
+-- Track which monorepos have already been processed to prevent loops
+-- local processed_monorepos = {}
+--
+-- -- Function to find monorepo root for Python projects
+-- local function find_monorepo_root()
+--   local current_file = vim.api.nvim_buf_get_name(0)
+--   if current_file == "" then
+--     return nil
+--   end
+--
+--   local current_dir = vim.fn.fnamemodify(current_file, ":h")
+--   local root = current_dir
+--
+--   -- Walk up the directory tree to find .git directory (monorepo root)
+--   while root ~= "/" and root ~= "" do
+--     local git_path = root .. "/.git"
+--     if vim.fn.isdirectory(git_path) == 1 then
+--       -- Found .git directory, this is likely the monorepo root
+--       return root
+--     end
+--
+--     -- Move up one directory
+--     local parent = vim.fn.fnamemodify(root, ":h")
+--     if parent == root then
+--       break -- Reached filesystem root
+--     end
+--     root = parent
+--   end
+--
+--   return nil
+-- end
+--
+-- -- Function to update LSP root directory for Python monorepo
+-- local function update_lsp_root_for_monorepo()
+--   local current_bufnr = vim.api.nvim_get_current_buf()
+--   local current_file = vim.api.nvim_buf_get_name(current_bufnr)
+--
+--   if current_file == "" then
+--     return
+--   end
+--
+--   local monorepo_root = find_monorepo_root()
+--   if not monorepo_root then
+--     return
+--   end
+--
+--   -- Check if we've already processed this monorepo root
+--   if processed_monorepos[monorepo_root] then
+--     return
+--   end
+--
+--   -- Get all LSP clients (not just for current buffer)
+--   local clients = vim.lsp.get_clients()
+--
+--   for _, client in ipairs(clients) do
+--     -- Check if this is a Python LSP client
+--     if
+--       client.name == "pyright"
+--       or client.name == "pylsp"
+--       or client.name == "jedi_language_server"
+--       or client.name == "basedpyright"
+--       or client.name == "ruff"
+--     then
+--       local needs_update = false
+--       local monorepo_uri = "file://" .. monorepo_root
+--
+--       -- Check root directory first
+--       if client.config and client.config.root_dir and client.config.root_dir ~= monorepo_root then
+--         needs_update = true
+--       end
+--
+--       -- Check workspace folders
+--       local current_workspace_folders = client.workspace_folders or {}
+--
+--       -- If we have multiple workspace folders, we need to consolidate
+--       if #current_workspace_folders > 1 then
+--         needs_update = true
+--       end
+--
+--       -- If we have only one workspace folder but it's not the monorepo root
+--       if #current_workspace_folders == 1 and current_workspace_folders[1].uri ~= monorepo_uri then
+--         needs_update = true
+--       end
+--
+--       -- Check if any workspace folder is a subdirectory of the monorepo
+--       for _, folder in ipairs(current_workspace_folders) do
+--         if folder.uri ~= monorepo_uri and vim.startswith(folder.uri, monorepo_uri) then
+--           needs_update = true
+--           break
+--         end
+--       end
+--
+--       if needs_update then
+--         -- Mark this monorepo as processed
+--         processed_monorepos[monorepo_root] = true
+--
+--         vim.notify(
+--           string.format("Updating %s LSP workspace to monorepo root: %s", client.name, monorepo_root),
+--           vim.log.levels.INFO
+--         )
+--
+--         -- Use workspace/didChangeWorkspaceFolders to update workspace folders
+--         local new_workspace_folders = {
+--           { uri = monorepo_uri, name = vim.fn.fnamemodify(monorepo_root, ":t") },
+--         }
+--
+--         -- Remove old workspace folders and add new one
+--         local params = {
+--           event = {
+--             removed = current_workspace_folders,
+--             added = new_workspace_folders,
+--           },
+--         }
+--
+--         -- Send the workspace folder change notification
+--         client.notify("workspace/didChangeWorkspaceFolders", params)
+--
+--         -- Also update the client's internal workspace folders
+--         client.workspace_folders = new_workspace_folders
+--
+--         -- Update the root directory in the config
+--         if client.config then
+--           client.config.root_dir = monorepo_root
+--         end
+--
+--         return -- Exit after processing one client to avoid multiple updates
+--       end
+--     end
+--   end
+-- end
+--
+-- -- Create autocmd group for monorepo LSP management
+-- vim.api.nvim_create_augroup("MonorepoLSP", { clear = true })
+--
+-- -- Autocmd to update LSP root when LSP client attaches (only run once per monorepo)
+-- vim.api.nvim_create_autocmd("LspAttach", {
+--   group = "MonorepoLSP",
+--   pattern = "*.py",
+--   callback = function()
+--     -- Delay to ensure LSP is fully initialized
+--     vim.defer_fn(function()
+--       update_lsp_root_for_monorepo()
+--     end, 500)
+--   end,
+--   desc = "Update LSP root directory when LSP attaches to Python buffer",
+-- })
+-- vim.api.nvim_create_autocmd("BufEnter", {
+--   group = "MonorepoLSP",
+--   pattern = "*.py",
+--   callback = function() end,
+--   desc = "Update LSP root directory when switching buffer",
+-- })
+
