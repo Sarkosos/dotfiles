@@ -1,4 +1,5 @@
 tt.*
+raycast/
 .tests
 doc/tags
 debug
