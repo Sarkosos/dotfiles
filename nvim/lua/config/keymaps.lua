@@ -4,27 +4,10 @@
 vim.keymap.set({ "n", "x" }, "<leader>si", function()
   require("grug-far").open({ visualSelectionUsage = "operate-within-range" })
 end, { desc = "grug-far: Search within range" })
+vim.keymap.set({ "n", "x" }, "p", "<Plug>(YankyPutAfter)")
+vim.keymap.set({ "n", "x" }, "P", "<Plug>(YankyPutBefore)")
+vim.keymap.set({ "n", "x" }, "gp", "<Plug>(YankyGPutAfter)")
+vim.keymap.set({ "n", "x" }, "gP", "<Plug>(YankyGPutBefore)")
 
-vim.keymap.set("n", "<localleader>mi", ":MoltenInit<CR>", { silent = true, desc = "Initialize the plugin" })
-vim.keymap.set(
-  "n",
-  "<localleader>me",
-  ":MoltenEvaluateOperator<CR>",
-  { silent = true, desc = "run operator selection" }
-)
-vim.keymap.set("n", "<localleader>ml", ":MoltenEvaluateLine<CR>", { silent = true, desc = "evaluate line" })
-vim.keymap.set("n", "<localleader>mr", ":MoltenReevaluateCell<CR>", { silent = true, desc = "re-evaluate cell" })
-vim.keymap.set(
-  "v",
-  "<localleader>m",
-  ":<C-u>MoltenEvaluateVisual<CR>gv",
-  { silent = true, desc = "evaluate visual selection" }
-)
-vim.keymap.set("n", "<localleader>md", ":MoltenDelete<CR>", { silent = true, desc = "molten delete cell" })
-vim.keymap.set("n", "<localleader>mh", ":MoltenHideOutput<CR>", { silent = true, desc = "hide output" })
-vim.keymap.set(
-  "n",
-  "<localleader>ms",
-  ":noautocmd MoltenEnterOutput<CR>",
-  { silent = true, desc = "show/enter output" }
-)
+vim.keymap.set("n", "<c-p>", "<Plug>(YankyPreviousEntry)")
+vim.keymap.set("n", "<c-n>", "<Plug>(YankyNextEntry)")
